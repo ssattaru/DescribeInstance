@@ -15,8 +15,10 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
 import static java.lang.System.exit;
 import java.time.LocalDate;
-import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.StringTokenizer;
 /**
  *
  * @author sunayanasattaru
@@ -49,20 +51,17 @@ public class DescribeInstances {
                         instance.getState().getName(),
                         instance.getStateTransitionReason());
                     
-                    String dt = new String();
-                    String ct = new String();
-                    Scanner sc =  new Scanner(System.in);
-                    System.out.println("\nEnter the date in yyyy-mm-dd stated in the State Transition Reason: ");
-                    dt = sc.nextLine();
-                    System.out.println("\nEnter the current date in yyyy-mm-dd: ");
-                    ct = sc.nextLine();
-                    
+                    String originalStatement = instance.getStateTransitionReason();
+                    String dt = extractDtFromString(originalStatement);
                     String TransitionReasonDate = dt;
-                    String CurrentDate = ct;
+                    
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  // didn't use this line yet
+                    LocalDateTime now = LocalDateTime.now();
+                   
                     
                     try {
                         LocalDate dateBefore = LocalDate.parse(TransitionReasonDate);
-                        LocalDate dateAfter = LocalDate.parse(CurrentDate);
+                        LocalDateTime dateAfter = now;
 		
                         long noOfDaysBetween = ChronoUnit.DAYS.between(dateBefore, dateAfter);
                         
@@ -72,8 +71,6 @@ public class DescribeInstances {
                         else {
                             System.out.println("It has been more than a week.");
                         }
-                        
-                        exit(0);
                     } 
                     
                     catch (Exception e) {
@@ -86,8 +83,45 @@ public class DescribeInstances {
 
             if(response.getNextToken() == null) {
                 done = true;
-            }
+            } 
         }
+    }
+
+    private static String extractDtFromString(String originalStatement) {
+        StringTokenizer strkTokenizer = new StringTokenizer(originalStatement, "(");
+        strkTokenizer.nextToken();
+        String token2 = strkTokenizer.nextToken();
+        
+        StringTokenizer anTokenizer = new StringTokenizer(token2, " G");
+        String newStatement = anTokenizer.nextToken();
+        
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  // formats the parsed statement
+            String date = newStatement;
+            //convert String to LocalDate
+            LocalDate dateBeforeConverted = LocalDate.parse(date, formatter);
+            
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  // formats the localDateTime now
+            LocalDateTime now = LocalDateTime.now();
+            
+            LocalDate dateBefore = dateBeforeConverted;
+            LocalDateTime dateAfter = now;
+		
+            long noOfDaysBetween = ChronoUnit.DAYS.between(dateBefore, dateAfter); // calculates the amount of days in between both days presented
+                        
+            if (noOfDaysBetween < 7) {
+                System.out.println("Recently stopped.");
+            }
+            else {
+                System.out.println("It has been more than a week.");
+            }
+        } 
+                    
+        catch (Exception e) {
+                System.out.println("Exception occured " + e);
+        }          
+    
+        return newStatement;
     }
     
 }
