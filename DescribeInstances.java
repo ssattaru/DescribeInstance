@@ -14,10 +14,12 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
 import static java.lang.System.exit;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.StringTokenizer;
 /**
  *
@@ -50,14 +52,14 @@ public class DescribeInstances {
                         instance.getInstanceType(),
                         instance.getState().getName(),
                         instance.getStateTransitionReason());
+                        instance.getLaunchTime();
                     
                     String originalStatement = instance.getStateTransitionReason();
                     String dt = extractDtFromString(originalStatement);
                     String TransitionReasonDate = dt;
                     
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  // didn't use this line yet
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
                     LocalDateTime now = LocalDateTime.now();
-                   
                     
                     try {
                         LocalDate dateBefore = LocalDate.parse(TransitionReasonDate);
@@ -72,10 +74,32 @@ public class DescribeInstances {
                             System.out.println("It has been more than a week.");
                         }
                     } 
-                    
                     catch (Exception e) {
                         System.out.println("Exception occured " + e);
-                    }                  
+                    }         
+                 
+                // Start of Launch Time Information Programmming
+                Date launchTime = instance.getLaunchTime();
+                System.out.println(launchTime);  // Prints out the Launch time 
+                SimpleDateFormat DateFor = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                String launchTimeFormatted = DateFor.format(launchTime);  // formats launch time into dd/MM/yyyy
+                
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                String ltDateBefore = launchTimeFormatted;
+                LocalDate ltDateConverted = LocalDate.parse(ltDateBefore, formatter);
+                
+                LocalDate dateBefore = ltDateConverted;
+                LocalDateTime dateAfter = now;
+                
+                long ltDaysBetween = ChronoUnit.DAYS.between(dateBefore, dateAfter); // subtracts the date of both the launch date and current date
+                        
+                    if (ltDaysBetween < 7) {
+                        System.out.println("It has been less than a week since the instance has been launch.");
+                    }
+                    else {
+                        System.out.println("It has been more than a week since the instance has been launch.");
+                    }
+                    
                 }
             }
 
@@ -86,23 +110,22 @@ public class DescribeInstances {
             } 
         }
     }
-
+        
     private static String extractDtFromString(String originalStatement) {
         StringTokenizer strkTokenizer = new StringTokenizer(originalStatement, "(");
         strkTokenizer.nextToken();
         String token2 = strkTokenizer.nextToken();
         
         StringTokenizer anTokenizer = new StringTokenizer(token2, " G");
-        String newStatement = anTokenizer.nextToken();
+        String newStatement = anTokenizer.nextToken();  // new statement is in  GMT timezone
         
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  // formats the parsed statement
             String date = newStatement;
-            //convert String to LocalDate
             LocalDate dateBeforeConverted = LocalDate.parse(date, formatter);
             
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  // formats the localDateTime now
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now();  // LocalDateTime is in UTC time zone
             
             LocalDate dateBefore = dateBeforeConverted;
             LocalDateTime dateAfter = now;
