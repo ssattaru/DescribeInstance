@@ -21,6 +21,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 /**
  *
  * @author sunayanasattaru
@@ -28,7 +30,7 @@ import java.util.StringTokenizer;
 public class DescribeInstances {
         public static void main(String[] args) {
         // final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials("ABC", "XYZ");  
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAVCMKIJNMLP5JETUU", "kvUEEyZ+L2DzU8QJ93qa2PBsEtlOmYogV8qjCZVX");  
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.standard()
                         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                         .withRegion(Regions.US_EAST_1)
@@ -91,7 +93,17 @@ public class DescribeInstances {
                 LocalDate dateBefore = ltDateConverted;
                 LocalDateTime dateAfter = now;
                 
-                long ltDaysBetween = ChronoUnit.DAYS.between(dateBefore, dateAfter); // subtracts the date of both the launch date and current date
+                ZoneId newyorkZoneId = ZoneId.of("America/NewYork");
+                ZonedDateTime nyZonedDateTime = dateAfter.atZone(newyorkZoneId);
+                ZoneId newYorkZoneId = ZoneId.of("America/New_York");
+                ZonedDateTime estDateAfter = nyZonedDateTime.withZoneSameInstant(newYorkZoneId);
+            
+                ZoneId newyorkZoneId2 = ZoneId.of("America/NewYork");
+                ZonedDateTime nyZonedDateTime2 = dateBefore.atZone(newyorkZoneId2);
+                ZoneId newYorkZoneId2 = ZoneId.of("America/New_York");
+                ZonedDateTime estDateBefore = nyZonedDateTime2.withZoneSameInstant(newYorkZoneId2);
+                
+                long ltDaysBetween = ChronoUnit.DAYS.between(estDateBefore, estDateAfter); // subtracts the date of both the launch date and current date
                         
                     if (ltDaysBetween < 7) {
                         System.out.println("It has been less than a week since the instance has been launch.");
@@ -129,8 +141,18 @@ public class DescribeInstances {
             
             LocalDate dateBefore = dateBeforeConverted;
             LocalDateTime dateAfter = now;
+            
+            ZoneId newyorkZoneId = ZoneId.of("America/NewYork");
+            ZonedDateTime nyZonedDateTime = dateAfter.atZone(newyorkZoneId);
+            ZoneId newYorkZoneId = ZoneId.of("America/New_York");
+            ZonedDateTime estDateTimeAfter = nyZonedDateTime.withZoneSameInstant(newYorkZoneId);
+            
+            ZoneId newyorkZoneId2 = ZoneId.of("America/NewYork");
+            ZonedDateTime nyZonedDateTime2 = dateBefore.atZone(newyorkZoneId2);
+            ZoneId newYorkZoneId2 = ZoneId.of("America/New_York");
+            ZonedDateTime estDateTimeBefore = nyZonedDateTime2.withZoneSameInstant(newYorkZoneId2);
 		
-            long noOfDaysBetween = ChronoUnit.DAYS.between(dateBefore, dateAfter); // calculates the amount of days in between both days presented
+            long noOfDaysBetween = ChronoUnit.DAYS.between(estDateTimeBefore, estDateTimeAfter); // calculates the amount of days in between both days presented
                         
             if (noOfDaysBetween < 7) {
                 System.out.println("Recently stopped.");
