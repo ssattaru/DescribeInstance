@@ -30,7 +30,7 @@ import java.time.ZonedDateTime;
 public class DescribeInstances {
         public static void main(String[] args) {
         // final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAVCMKIJNMLP5JETUU", "kvUEEyZ+L2DzU8QJ93qa2PBsEtlOmYogV8qjCZVX");  
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials("ABC", "XYZ");  
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.standard()
                         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                         .withRegion(Regions.US_EAST_1)
